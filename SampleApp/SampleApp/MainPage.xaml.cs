@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Dyme.Services;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -13,6 +14,21 @@ namespace SampleApp
 		public MainPage()
 		{
 			InitializeComponent();
+		}
+
+		private void btnStartService_Clicked(object sender, EventArgs e)
+		{
+			var serviceManager = SimpleServiceManager.Start("MySimpleService");
+		}
+
+		private void btnStopService_Clicked(object sender, EventArgs e)
+		{
+
+		}
+
+		private void btnNotify_Clicked(object sender, EventArgs e)
+		{
+
 		}
 	}
 }
