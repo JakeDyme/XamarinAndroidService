@@ -1,4 +1,4 @@
-#region Assembly Mono.Android, Version=0.0.0.0, Culture=neutral, PublicKeyToken=84e04ff9cfb79065
+﻿#region Assembly Mono.Android, Version=0.0.0.0, Culture=neutral, PublicKeyToken=84e04ff9cfb79065
 // C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\ReferenceAssemblies\Microsoft\Framework\MonoAndroid\v9.0\Mono.Android.dll
 #endregion
 
@@ -7,13 +7,13 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-using Java.Interop;
+using Android.Graphics.Drawables;
+using Xamarin.Forms;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Xamarin.Forms;
-using Android.Util;
+
 
 namespace Dyme.Services
 {
@@ -62,11 +62,6 @@ namespace Dyme.Services
 
 		}
 
-		public void StopIt(bool removeNotification)
-		{
-			//StopForeground(removeNotification);
-		}
-
 		[return: GeneratedEnum]
 		public override StartCommandResult OnStartCommand(Intent intent, [GeneratedEnum] StartCommandFlags flags, int startId)
 		{
@@ -110,18 +105,19 @@ namespace Dyme.Services
 			BuildNotificationChannel(Options);
 			NotificationInstance = MakeNotificationItem(Options, NOTIFICATION_ID);
 			// Enlist this instance of the service as a foreground service...			
-			
-			
+
 			StartForeground(NOTIFICATION_ID, NotificationInstance);
 			//OnStart += _instance.OnStart(this);
 			_instance.OnStart(this);
 
-			return StartCommandResult.RedeliverIntent;
+			return StartCommandResult.Sticky;
 		}
 
 		private void UpdateNotificationText(string notiText)
 		{
-			NotificationInstance.TickerText = CharSequence.ArrayFromStringArray(new string[] { notiText })[0];
+			NotificationBuilder.SetContentText(CharSequence.ArrayFromStringArray(new string[] { notiText })[0]);// = new Notification.Builder(Android.App.Application.Context)
+			StartForeground(NOTIFICATION_ID, NotificationBuilder.Build());
+			//NotificationInstance.TickerText = CharSequence.ArrayFromStringArray(new string[] { notiText })[0];
 		}
 
 		private static object CreateClassInstance(string className)
@@ -156,8 +152,8 @@ namespace Dyme.Services
 				var intent = BuildAction(action.Key, action.Value);
 				NotificationBuilder.AddAction(intent);
 			}
-			
-			return NotificationBuilder.Build();
+			var notification = NotificationBuilder.Build();
+			return notification;
 		}
 
 		public void BuildNotificationChannel(SimpleServiceOptions options)
@@ -169,7 +165,7 @@ namespace Dyme.Services
 			NotificationManager = (NotificationManager)Android.App.Application.Context.GetSystemService(Android.App.Application.NotificationService);
 			NotificationManager.CreateNotificationChannel(NotificationChannel);
 		}
-		
+
 		public void DeleteNotificationChannel(SimpleServiceOptions options)
 		{
 			NotificationManager = (NotificationManager)Android.App.Application.Context.GetSystemService(Android.App.Application.NotificationService);
@@ -193,7 +189,7 @@ namespace Dyme.Services
 		//	return pendingIntent;
 		//}
 
-	PendingIntent BuildIntentToRemoveNotification(SimpleServiceOptions options, int notificationId)
+		PendingIntent BuildIntentToRemoveNotification(SimpleServiceOptions options, int notificationId)
 		{
 			var intent = new Intent(Android.App.Application.Context, GetType());
 			intent.SetPackage(options.Advanced.PackageName);
@@ -258,7 +254,7 @@ namespace Dyme.Services
 
 	}
 
-	public class DymeBinder: Binder
+	public class DymeBinder : Binder
 	{
 		public ServiceCore Service { get; private set; }
 		public DymeBinder(ServiceCore service)
@@ -269,16 +265,18 @@ namespace Dyme.Services
 
 	public class DymeServiceConnection : Java.Lang.Object, IServiceConnection
 	{
+		public static bool ServiceIsActive { get; set; } = false;
 		public ServiceCore serviceInstance;
 
 		public void OnServiceConnected(ComponentName name, IBinder service)
 		{
 			serviceInstance = ((DymeBinder)service).Service;
+			ServiceIsActive = true;
 		}
 
 		public void OnServiceDisconnected(ComponentName name)
 		{
-			Console.WriteLine("OnServiceDisConnected() Method called");
+			ServiceIsActive = false;
 		}
 
 		//	static readonly string TAG = typeof(DymeServiceConnection).FullName;
@@ -337,4 +335,4 @@ namespace Dyme.Services
 		//	//}
 		//}
 	}
-	}
+}

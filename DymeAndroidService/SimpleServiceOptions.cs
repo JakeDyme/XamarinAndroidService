@@ -41,16 +41,17 @@ namespace Dyme.Services
 
 		public Dictionary<string, string> ActionNamesAndTitles { get; set; }
 		public SimpleServiceAdvancedOptions Advanced { get; set; }
-
+		
 		public SimpleServiceOptions()
 		{
 			NotificationTitle = Application.Context.PackageName;
 			ActionNamesAndTitles = new Dictionary<string, string>();
 			Advanced = new SimpleServiceAdvancedOptions();
 		}
-		public SimpleServiceOptions(string name)
+		public SimpleServiceOptions(string name, string content)
 		{
 			NotificationTitle = name;
+			NotificationText = content;
 			ActionNamesAndTitles = new Dictionary<string, string>();
 			Advanced = new SimpleServiceAdvancedOptions(name);
 		}

@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="Xamarin.Forms.Visual.Material" Version="5.0.0.7220" />
+    <PackageReference Include="Xamarin.Forms.Visual.Material" Version="4.8.0.1451" />
   </ItemGroup>
 
   <ItemGroup>
