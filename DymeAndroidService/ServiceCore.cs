@@ -136,10 +136,11 @@ namespace Dyme.Services
 
 		private Notification MakeNotificationItem(SimpleServiceOptions options, int notificationId)
 		{
+			//Icon icon = Icon.CreateWithFilePath() .CreateWithResource(this, Resource.Drawable.IcDialogInfo);
 			NotificationBuilder = new Notification.Builder(Android.App.Application.Context)
 					.SetContentTitle(options.NotificationTitle ?? Android.App.Application.Context.ApplicationInfo.Name)
 					.SetContentText(options.NotificationText ?? "")
-					.SetSmallIcon(Resource.Drawable.IcDialogInfo)
+					.SetSmallIcon((int)options.NotificationIcon)
 					.SetOngoing(true)
 					//.SetAutoCancel(true)
 					//.SetPriority(0)
