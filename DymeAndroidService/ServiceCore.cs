@@ -1,4 +1,4 @@
-﻿#region Assembly Mono.Android, Version=0.0.0.0, Culture=neutral, PublicKeyToken=84e04ff9cfb79065
+#region Assembly Mono.Android, Version=0.0.0.0, Culture=neutral, PublicKeyToken=84e04ff9cfb79065
 // C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\Common7\IDE\ReferenceAssemblies\Microsoft\Framework\MonoAndroid\v9.0\Mono.Android.dll
 #endregion
 
@@ -145,7 +145,7 @@ namespace Dyme.Services
 					//.SetPriority(0)
 					.SetChannelId(options.Advanced.ChannelId);
 
-			//if (options.Silent) NotificationBuilder.SetSound(null,null);
+			NotificationBuilder.SetSound(null,null);
 			NotificationBuilder.SetContentIntent(BuildIntentToShowMainActivity(options));
 			//notificationBuilder.SetFullScreenIntent(BuildIntentToShowMainActivity(), false);
 			NotificationBuilder.SetDeleteIntent(BuildIntentToRemoveNotification(options, notificationId));
@@ -161,7 +161,7 @@ namespace Dyme.Services
 
 		public void BuildNotificationChannel(SimpleServiceOptions options)
 		{
-			NotificationChannel = new NotificationChannel(options.Advanced.ChannelId, options.Advanced.ChannelName, NotificationImportance.Default)
+			NotificationChannel = new NotificationChannel(options.Advanced.ChannelId, options.Advanced.ChannelName, NotificationImportance.Low)
 			{
 				Description = options.Advanced.ChannelDescription
 			};
