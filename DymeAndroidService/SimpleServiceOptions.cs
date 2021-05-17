@@ -12,23 +12,16 @@ namespace Dyme.Services
 		public string ServiceName { get; set; }
 		public string PackageName { get; set; }
 		public bool Silent { get; set; } = false;
-		public SimpleServiceAdvancedOptions(string name)
-		{
-			var packageName = PackageName ?? Application.Context.PackageName;
-			ChannelName = $"Channel_{name}_{Guid.NewGuid().ToString().Substring(0, 4)}";
-			ChannelId = $"ChannelId_{name}_{Guid.NewGuid().ToString().Substring(0, 4)}";
-			ChannelDescription = packageName;
-			ServiceName = $"Service_{name}_{Guid.NewGuid().ToString().Substring(0, 4)}";
-			PackageName = packageName;
-		}
 
-		public SimpleServiceAdvancedOptions()
+		public SimpleServiceAdvancedOptions(string name = null)
 		{
 			var packageName = PackageName ?? Application.Context.PackageName;
-			ChannelName = $"Channel_{packageName}_{Guid.NewGuid().ToString().Substring(0, 4)}";
-			ChannelId = $"ChannelId_{packageName}_{Guid.NewGuid().ToString().Substring(0, 4)}";
-			ChannelDescription = packageName;
-			ServiceName = $"Service_{packageName}_{Guid.NewGuid().ToString().Substring(0, 4)}";
+			var finalName = name ?? packageName;
+			var hashValue = finalName.GetHashCode();
+			ChannelName = $"Channel_{finalName}_{hashValue}";
+			ChannelId = $"ChannelId_{finalName}_{hashValue}";
+			ChannelDescription = finalName;
+			ServiceName = $"Service_{finalName}_{hashValue}";
 			PackageName = packageName;
 		}
 	}

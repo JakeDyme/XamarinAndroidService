@@ -7,13 +7,11 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Runtime;
-using Android.Graphics.Drawables;
 using Xamarin.Forms;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-
 
 namespace Dyme.Services
 {
