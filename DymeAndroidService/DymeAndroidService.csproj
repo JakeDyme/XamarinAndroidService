@@ -6,6 +6,8 @@
 	<Authors>JakeDyme</Authors>
 	<Company>JakeDyme</Company>
 	<Description>Android foreground/background service specifically designed for Xamarin.Forms.</Description>
+	<PackageId>Xamarin.Android.Service</PackageId>
+	<PackageIcon>bushbaby.png</PackageIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,6 +31,17 @@
     <Reference Include="Xamarin.Forms.Core">
       <HintPath>References\Microsoft\Xamarin\NuGet\xamarin.forms\4.8.0.1451\lib\netstandard2.0\Xamarin.Forms.Core.dll</HintPath>
     </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Nuget\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="bushbaby.png">
+      <Pack>True</Pack>
+      <PackagePath></PackagePath>
+    </None>
   </ItemGroup>
   
 </Project>

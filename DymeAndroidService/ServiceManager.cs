@@ -1,7 +1,4 @@
-﻿using Android;
-using Android.Content;
-using Android.Graphics;
-using Android.Graphics.Drawables;
+﻿using Android.Content;
 using DymeAndroidService;
 using Newtonsoft.Json;
 using System;
@@ -14,8 +11,6 @@ namespace Dyme.Services
 		string _packageName;
 		private DymeServiceConnection _newServiceConnection = new DymeServiceConnection();
 		private ServiceCore _serviceInstance;
-		//private T _userService;
-		//private Dictionary<string, Action> Actions = new Dictionary<string, Action>();
 
 		public static async Task<ServiceManager> Start(string name, string content, SimpleServiceOptions options = null)
 		{
@@ -43,7 +38,6 @@ namespace Dyme.Services
 		public void StopService(bool removeNotification)
 		{
 			_serviceInstance?.StopForeground(removeNotification);
-			//_serviceInstance?.StopSelf();
 		}
 
 		public async Task StopExistingService(string packageName)
@@ -72,8 +66,6 @@ namespace Dyme.Services
 			intent.SetPackage(_packageName);
 			intent.SetAction(ServiceCore.ACTIONS_UPDATE_NOTI_TEXT);
 			intent.PutExtra(ServiceCore.EXTRAS_NOTI_TEXT, notificationText);
-			//_serviceInstance.NotificationBuilder.SetContentText(CharSequence.ArrayFromStringArray(new string[] { message })[0]);// = new Notification.Builder(Android.App.Application.Context)
-			//_serviceInstance.StartForeground(ServiceCore.NOTIFICATION_ID, _core.NotificationBuilder.Build());
 			await ExecuteIntent(intent);
 		}
 
@@ -104,7 +96,6 @@ namespace Dyme.Services
 				{
 					await Task.Delay(500);
 				}
-				//Android.App.Application.Context.StartForegroundService(intent);
 				Android.App.Application.Context.BindService(intent, _newServiceConnection, Bind.AutoCreate);
 				_serviceInstance = _newServiceConnection.serviceInstance;
 			});

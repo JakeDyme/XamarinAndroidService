@@ -57,7 +57,6 @@ namespace Dyme.Services
 				var str = CharSequence.ArrayFromStringArray(new string[] { arg })[0];
 				NotificationInstance.Actions.First(a => a.Title == str).ActionIntent.Send();
 			});
-
 		}
 
 		[return: GeneratedEnum]
@@ -143,7 +142,7 @@ namespace Dyme.Services
 			NotificationBuilder.SetSound(null,null);
 			NotificationBuilder.SetContentIntent(BuildIntentToShowMainActivity(options));
 			//notificationBuilder.SetFullScreenIntent(BuildIntentToShowMainActivity(), false);
-			NotificationBuilder.SetDeleteIntent(BuildIntentToRemoveNotification(options, notificationId));
+			NotificationBuilder.SetDeleteIntent(GetTestIntent()); //BuildIntentToRemoveNotification(options));
 			// Add custom action buttons...
 			foreach (var action in options.ActionNamesAndTitles)
 			{
@@ -179,22 +178,34 @@ namespace Dyme.Services
 			return pendingIntent;
 		}
 
-		//private PendingIntent createOnDismissedIntent(Context context, int notificationId)
+		//PendingIntent CreateOnDismissedIntent(Context context, SimpleServiceOptions options)
 		//{
-		//	Intent intent = new Intent(context, NotificationDismissedReceiver.class);
-		//	intent.putExtra($"{_packageName}.notificationId", notificationId);
-		//	PendingIntent pendingIntent = PendingIntent.GetBroadcast(context.getApplicationContext(), notificationId, intent, 0);
+		//	Intent intent = new Intent(context, typeof(NotificationDismissedReceiver));
+		//	intent.PutExtra($"{options.Advanced.PackageName}.notificationId", NOTIFICATION_ID);
+		//	PendingIntent pendingIntent = PendingIntent.GetBroadcast(Android.App.Application.Context, NOTIFICATION_ID, intent, 0);
 		//	return pendingIntent;
 		//}
 
-		PendingIntent BuildIntentToRemoveNotification(SimpleServiceOptions options, int notificationId)
+		PendingIntent GetTestIntent()
 		{
 			var intent = new Intent(Android.App.Application.Context, GetType());
-			intent.SetPackage(options.Advanced.PackageName);
-			intent.SetAction(ACTIONS_STOP_SERVICE);
-			//notificationIntent.SetFlags(ActivityFlags.SingleTop | ActivityFlags.ClearTask);
-			var pendingIntent = PendingIntent.GetService(Android.App.Application.Context, 0, intent, 0);//PendingIntent.GetBroadcast(Android.App.Application.Context, notificationId, intent, 0);
+			intent.SetAction("TEST");
+			var pendingIntent = PendingIntent.GetService(Android.App.Application.Context, 0, intent, 0);
 			return pendingIntent;
+		}
+
+	PendingIntent BuildIntentToRemoveNotification(SimpleServiceOptions options)
+	{
+			Intent intent = new Intent(Android.App.Application.Context, typeof(NotificationDismissedReceiver));
+			intent.PutExtra($"{options.Advanced.PackageName}.notificationId", NOTIFICATION_ID);
+			PendingIntent pendingIntent = PendingIntent.GetBroadcast(Android.App.Application.Context, NOTIFICATION_ID, intent, 0);
+			return pendingIntent;
+			//var intent = new Intent(Android.App.Application.Context, GetType());
+			//intent.SetPackage(options.Advanced.PackageName);
+			//intent.SetAction(ACTIONS_STOP_SERVICE);
+			////notificationIntent.SetFlags(ActivityFlags.SingleTop | ActivityFlags.ClearTask);
+			//var pendingIntent = PendingIntent.GetService(Android.App.Application.Context, 0, intent, 0);//PendingIntent.GetBroadcast(Android.App.Application.Context, notificationId, intent, 0);
+			//return pendingIntent;
 		}
 
 		Notification.Action BuildAction(string actionName, string actionTitle)
@@ -250,6 +261,16 @@ namespace Dyme.Services
 		//	return builder.Build();
 		//}
 
+	}
+
+	public class NotificationDismissedReceiver: BroadcastReceiver
+	{
+		public override void OnReceive(Context context, Intent intent)
+		{
+			int notificationId = ServiceCore.NOTIFICATION_ID;
+
+			/* Your code to handle the event here */
+		}
 	}
 
 	public class DymeBinder : Binder
