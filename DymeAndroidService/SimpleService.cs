@@ -13,7 +13,7 @@ namespace DymeAndroidService
 			
 		}
 
-		public void OnStart(ServiceCore core)
+		public void OnStart(SimpleServiceCore core)
 		{
 			
 		}

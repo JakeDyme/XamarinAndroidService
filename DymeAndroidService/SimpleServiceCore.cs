@@ -12,20 +12,20 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
+using DymeAndroidService;
 
 namespace Dyme.Services
 {
 
 	[Service(Name = "com.dyme.ServiceCore")]
-	public class ServiceCore : Service
+	public class SimpleServiceCore : Service
 	{
-		public const string ACTIONS_NOTI_TAP = "JD_NOTI_TAP";
-		public const string ACTIONS_NOTI_SWIPE = "JD_NOTI_SWIPE";
-		public static string ACTIONS_STOP_SERVICE = "JD_STOP_SERVICE";
-		public static string ACTIONS_UPDATE_NOTI_TEXT = "JD_UPDATE_NOTI_TEXT";
-
-		public static string MSG_STOP_SERVICE = "JD_STOP_SERVICE";
-		public static string MSG_TRIGGER_ACTION = "JD_ACCEPT_ACTION";
+		public const string CALL_NOTI_TAP = "JD_NOTI_TAP";
+		public const string CALL_NOTI_SWIPE = "JD_NOTI_SWIPE";
+		public static string CALL_STOP_SERVICE = "JD_STOP_SERVICE";
+		public static string CALL_UPDATE_NOTI_TEXT = "JD_UPDATE_NOTI_TEXT";
+		public static string CALL_TRIGGER_ACTION = "JD_ACCEPT_ACTION";
 
 		internal const string EXTRAS_SERVICE_OPTIONS = "JD_SERVICE_OPTIONS";
 		internal const string EXTRAS_CLASS_NAME = "JD_CLASS_NAME";
@@ -38,24 +38,33 @@ namespace Dyme.Services
 		public Notification.Builder NotificationBuilder { get; set; }
 		public NotificationChannel NotificationChannel { get; set; }
 		public NotificationManager NotificationManager { get; set; }
-		private SimpleServiceOptions Options;
+		private SimpleServiceOptions Options { get; set; }
 		private ISimpleService _instance { get; set; }
-		private DymeBinder binder;
+		private DymeBinder binder { get; set; }
+		private DymeServiceConnection _newServiceConnection { get; set; } = new DymeServiceConnection();
 
-		public ServiceCore()
+		public SimpleServiceCore()
 		{
-			MessagingCenter.Subscribe<object, string>(this, MSG_STOP_SERVICE, (s, arg) =>
+			MessagingCenter.Subscribe<object, string>(this, CALL_STOP_SERVICE, (s, arg) =>
 			{
 				if (_instance != null) _instance.OnStop(new List<string>());
 				this.StopSelf();
+				this.StopForeground(true);
 			});
 
-			MessagingCenter.Subscribe<object, string>(this, MSG_TRIGGER_ACTION, (s, arg) =>
+			MessagingCenter.Subscribe<object, string>(this, CALL_TRIGGER_ACTION, (s, arg) =>
 			{
 				if (_instance == null) return;
 				if (NotificationInstance == null) return;
 				var str = CharSequence.ArrayFromStringArray(new string[] { arg })[0];
 				NotificationInstance.Actions.First(a => a.Title == str).ActionIntent.Send();
+			});
+
+			MessagingCenter.Subscribe<object, string>(this, CALL_UPDATE_NOTI_TEXT, (s, arg) =>
+			{
+				if (_instance == null) return;
+				if (NotificationInstance == null) return;
+				UpdateNotificationText(arg);
 			});
 		}
 
@@ -65,22 +74,22 @@ namespace Dyme.Services
 			// Handle incomming action requests...
 			if (intent.Action != null)
 			{
-				if (intent.Action == ACTIONS_UPDATE_NOTI_TEXT)
+				if (intent.Action == CALL_UPDATE_NOTI_TEXT)
 				{
 					string notiText = intent.GetStringExtra(EXTRAS_NOTI_TEXT);
 					UpdateNotificationText(notiText);
 				}
-				if (intent.Action == ACTIONS_STOP_SERVICE)
+				if (intent.Action == CALL_STOP_SERVICE)
 				{
 					StopForeground(true);
 					return StartCommandResult.RedeliverIntent;
 				}
-				if (intent.Action == ACTIONS_NOTI_TAP)
+				if (intent.Action == CALL_NOTI_TAP)
 				{
 					_instance.OnTapNotification();
 					return StartCommandResult.RedeliverIntent;
 				}
-				if (intent.Action == ACTIONS_NOTI_SWIPE)
+				if (intent.Action == CALL_NOTI_SWIPE)
 				{
 					//_instance.OnSwipeAwayNotification();
 					return StartCommandResult.RedeliverIntent;
@@ -110,11 +119,82 @@ namespace Dyme.Services
 			return StartCommandResult.Sticky;
 		}
 
-		private void UpdateNotificationText(string notiText)
+
+		public static async Task<SimpleServiceCore> Start(string name, string content, SimpleServiceOptions options = null)
+		{
+			options = options ?? new SimpleServiceOptions();
+			options.NotificationTitle = name;
+			options.NotificationText = content;
+			return await Start<SimpleService>(name, content, options);
+		}
+
+		public static async Task<SimpleServiceCore> Start<T>(string name, string content, SimpleServiceOptions options = null) where T : ISimpleService
+		{
+			options = options ?? new SimpleServiceOptions();
+			options.NotificationTitle = name;
+			options.NotificationText = content;
+			var intent = new Intent(Android.App.Application.Context, typeof(SimpleServiceCore));
+			intent.SetPackage(options.Advanced.PackageName);
+			intent.PutExtra(SimpleServiceCore.EXTRAS_SERVICE_OPTIONS, JsonConvert.SerializeObject(options));
+			intent.PutExtra(SimpleServiceCore.EXTRAS_CLASS_NAME, typeof(T).FullName);
+			var newServiceManager = new SimpleServiceCore();
+			await newServiceManager.ExecuteIntent(intent);
+			return newServiceManager;
+		}
+
+		public async Task StopExistingService(string packageName)
+		{
+			// Wrap the user's action into an intent...
+			var intent = new Intent(Android.App.Application.Context, typeof(SimpleServiceCore));
+			intent.SetPackage(packageName);
+			intent.SetAction(SimpleServiceCore.CALL_STOP_SERVICE);
+			await ExecuteIntent(intent);
+		}
+
+		public async Task ExecuteAction(string actionName, string[] args = null)
+		{
+			// Wrap the user's action into an intent...
+			var intent = new Intent(Android.App.Application.Context, typeof(SimpleServiceCore));
+			intent.SetPackage(Options.Advanced.PackageName);
+			intent.SetAction(actionName);
+			if (args != null) intent.PutStringArrayListExtra(SimpleServiceCore.EXTRAS_ARGS, args);
+			await ExecuteIntent(intent);
+		}
+
+		private async Task ExecuteIntent(Intent intent)
+		{
+			DymeServiceConnection.ServiceIsActive = false;
+			if (Android.OS.Build.VERSION.SdkInt >= Android.OS.BuildVersionCodes.O)
+			{
+				Android.App.Application.Context.StartForegroundService(intent);
+				Android.App.Application.Context.BindService(intent, _newServiceConnection, Bind.AutoCreate);
+				await WaitForServiceToBind(intent);
+			}
+			else
+			{
+				Android.App.Application.Context.StartService(intent);
+				Android.App.Application.Context.BindService(intent, _newServiceConnection, Bind.AutoCreate);
+				await WaitForServiceToBind(intent);
+			}
+		}
+
+		private async Task WaitForServiceToBind(Intent intent)
+		{
+			await Task.Run(async () =>
+			{
+				var startTime = DateTime.Now;
+				while ((DateTime.Now - startTime).TotalSeconds < 10 && !DymeServiceConnection.ServiceIsActive)
+				{
+					await Task.Delay(500);
+				}
+				Android.App.Application.Context.BindService(intent, _newServiceConnection, Bind.AutoCreate);
+			});
+		}
+
+		public void UpdateNotificationText(string notiText)
 		{
 			NotificationBuilder.SetContentText(CharSequence.ArrayFromStringArray(new string[] { notiText })[0]);// = new Notification.Builder(Android.App.Application.Context)
 			StartForeground(NOTIFICATION_ID, NotificationBuilder.Build());
-			//NotificationInstance.TickerText = CharSequence.ArrayFromStringArray(new string[] { notiText })[0];
 		}
 
 		private static object CreateClassInstance(string className)
@@ -129,20 +209,16 @@ namespace Dyme.Services
 
 		private Notification MakeNotificationItem(SimpleServiceOptions options, int notificationId)
 		{
-			//Icon icon = Icon.CreateWithFilePath() .CreateWithResource(this, Resource.Drawable.IcDialogInfo);
 			NotificationBuilder = new Notification.Builder(Android.App.Application.Context)
 					.SetContentTitle(options.NotificationTitle ?? Android.App.Application.Context.ApplicationInfo.Name)
 					.SetContentText(options.NotificationText ?? "")
 					.SetSmallIcon((int)options.NotificationIcon)
 					.SetOngoing(true)
-					//.SetAutoCancel(true)
-					//.SetPriority(0)
 					.SetChannelId(options.Advanced.ChannelId);
 
 			NotificationBuilder.SetSound(null,null);
 			NotificationBuilder.SetContentIntent(BuildIntentToShowMainActivity(options));
-			//notificationBuilder.SetFullScreenIntent(BuildIntentToShowMainActivity(), false);
-			NotificationBuilder.SetDeleteIntent(GetTestIntent()); //BuildIntentToRemoveNotification(options));
+			NotificationBuilder.SetDeleteIntent(GetTestIntent());
 			// Add custom action buttons...
 			foreach (var action in options.ActionNamesAndTitles)
 			{
@@ -172,7 +248,7 @@ namespace Dyme.Services
 		PendingIntent BuildIntentToShowMainActivity(SimpleServiceOptions options)
 		{
 			var intent = new Intent(Android.App.Application.Context, GetType());
-			intent.SetAction(ACTIONS_NOTI_TAP);
+			intent.SetAction(CALL_NOTI_TAP);
 			intent.SetPackage(options.Advanced.PackageName);
 			var pendingIntent = PendingIntent.GetService(Android.App.Application.Context, 0, intent, 0);
 			return pendingIntent;
@@ -267,7 +343,7 @@ namespace Dyme.Services
 	{
 		public override void OnReceive(Context context, Intent intent)
 		{
-			int notificationId = ServiceCore.NOTIFICATION_ID;
+			int notificationId = SimpleServiceCore.NOTIFICATION_ID;
 
 			/* Your code to handle the event here */
 		}
@@ -275,8 +351,8 @@ namespace Dyme.Services
 
 	public class DymeBinder : Binder
 	{
-		public ServiceCore Service { get; private set; }
-		public DymeBinder(ServiceCore service)
+		public SimpleServiceCore Service { get; private set; }
+		public DymeBinder(SimpleServiceCore service)
 		{
 			this.Service = service;
 		}
@@ -285,7 +361,7 @@ namespace Dyme.Services
 	public class DymeServiceConnection : Java.Lang.Object, IServiceConnection
 	{
 		public static bool ServiceIsActive { get; set; } = false;
-		public ServiceCore serviceInstance;
+		public SimpleServiceCore serviceInstance;
 
 		public void OnServiceConnected(ComponentName name, IBinder service)
 		{

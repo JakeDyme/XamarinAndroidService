@@ -1,0 +1,36 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SampleApp2.MainPage">
+
+  <Grid>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"></RowDefinition>
+      <RowDefinition Height="50"></RowDefinition>
+    </Grid.RowDefinitions>
+    <StackLayout Grid.Row="0">
+      <Frame BackgroundColor="#2196F3" Padding="24" CornerRadius="0">
+        <Label Text="My Simple Service" HorizontalTextAlignment="Center" TextColor="White" FontSize="36"/>
+      </Frame>
+      <Frame>
+        <StackLayout>
+          <Button x:Name="btnStartService" Text="Start Service" Clicked="btnStartService_Clicked"></Button>
+          <Button x:Name="btnStopService" Text="Stop Service" Clicked="btnStopService_Clicked"></Button>
+        </StackLayout>
+      </Frame>
+      <Frame>
+        <Label>
+          <Label.Text>
+1. Start the service, and expand the notifications menu.
+2. Find the service notification and expand it (with the tiny arrow next to the name)
+3. Click on the actions and notice the "Player..." text at the bottom of the screen being updated.
+          </Label.Text>
+        </Label>
+      </Frame>
+    </StackLayout>
+    <Frame Padding="0" Grid.Row="1" BackgroundColor="#162a36" CornerRadius="0">
+      <Label  HorizontalOptions="Center" VerticalOptions="Center" FontSize="Large" TextColor="Salmon" x:Name="lblPlayerStatus" Text="Player Stopped"></Label>
+    </Frame>
+  </Grid>
+  
+</ContentPage>

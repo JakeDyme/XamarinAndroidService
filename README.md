@@ -1,21 +1,10 @@
  
 # Dyme Xamarin Forms Android Service
 ## What is it?
-- A background/foreground/service/notification thingy for Xamarin Android projects
-(its what I would consider a background service, 
+- A background/foreground/service/notification for Xamarin Android projects
+(its what you might consider a background service, 
 but its called a foreground service, and includes a notification that the user can interact with and monitor).
 - A Nuget package for Xamarin Forms projects.
-
-## Why have I done this?
-If you've had a go at making an Android service,
-then you're probably familiar with the spider web of management classes that you need to setup. 
-After spending much time going through it myself, I decided to never let the journey end, 
-and added yet another layer of management on top of that
-(you can never have too much management).
-Anyway I hope this saves you some time (and head-scratching).
-I've tried to make it as simple as possible to use, and have successfully used it in one of my own projects.
-Android is a continuously evolving beast though, so I cannot guarantee that it will work for all versions.
-Good luck!
 
 ## Pre-Setup
 You must add the *Foreground Service Permission* to your Android app's manifest...
@@ -24,11 +13,64 @@ You must add the *Foreground Service Permission* to your Android app's manifest.
 ```
 
 ## Implementations
-There are several ways that you can implement the service. I'll start with the easiest.
+There are several ways that you can implement the service.
 
-### 1. The Easiest
-This is if you just want a simple notification that lives beyond the lifetime of your application.
+### Basic
+This is if you just want a simple notification that lives beyond the lifetime of your application.  
+
 ```C#
-_service = await ServiceManager.Start("My Wacky Service", "Hello world!");
+// Create and start a service...
+_service = await ServiceManager.Start("My Service", "Hello world!");
 ```
-Note: These can't be dismissed by the user
+
+```C#
+// Stop the service...
+_simpleService.StopService(removeNotification: true);
+```
+
+### Advanced
+If you want to perform tasks from within the service.
+1. Implement the ISimpleService interface.
+```C#
+public class MyService : ISimpleService
+{
+    public void OnExecuteAction(string actionName, IList<string> args)
+    {
+        // Event handler for actions declared in the "SimpleServiceOptions"
+    }
+
+    public void OnStart(SimpleServiceCore core)
+    {
+        // Called when the service starts
+    }
+
+    public void OnStop(IList<string> args)
+    {
+        // Called when the service is stopped
+    }
+
+    public void OnTapNotification()
+    {
+        // Called when the user taps the notification
+    }
+}
+```
+2. Pass your service class into with the Start method
+
+```C#
+// Create and start a service...
+_service = await ServiceManager.Start<MyService>("My Service", "Hello world!");
+```
+
+## Sample Apps
+*SampleApp* shows you a simple way to start the service, and to update the notification. 
+
+*SampleApp2* demonstrates a full implementation, and shows communication from the app to the service, and from the service to the App. It also shows examples of how to start the service automatically when the user navigates away from your application.
+
+
+1. Click "Start Service", notice the notification created:  
+![Start service image](SampleApp2/SampleApp2/ex1.png)  
+2. Expand notification   
+![Expand notification image](SampleApp2/SampleApp2/ex2.png)  
+3. Use notification buttons, notice the app state in the background.  
+![Notification buttons image](SampleApp2/SampleApp2/ex3.png)  

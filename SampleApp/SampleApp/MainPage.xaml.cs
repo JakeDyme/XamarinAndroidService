@@ -6,7 +6,7 @@ namespace SampleApp
 {
 	public partial class MainPage : ContentPage
 	{
-		ServiceManager _simpleService;
+		SimpleServiceManager _simpleService;
 		int _updateCount;
 
 		public MainPage()
@@ -16,7 +16,7 @@ namespace SampleApp
 
 		private async void btnStartService_Clicked(object sender, EventArgs e)
 		{
-			_simpleService = await ServiceManager.Start("My Simple Service", "Hello world");
+			_simpleService = await SimpleServiceManager.Start("My Simple Service", "Hello world");
 		}
 
 		private void btnStopService_Clicked(object sender, EventArgs e)
