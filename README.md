@@ -15,7 +15,7 @@ You must add the *Foreground Service Permission* to your Android app's manifest.
 ## Implementations
 There are several ways that you can implement the service.
 
-### Basic
+### Basic Implementation
 This is if you just want a simple notification that lives beyond the lifetime of your application.  
 
 ```C#
@@ -28,7 +28,7 @@ _service = await ServiceManager.Start("My Service", "Hello world!");
 _simpleService.StopService(removeNotification: true);
 ```
 
-### Advanced
+### Full Implementation
 If you want to perform tasks from within the service.
 1. Implement the ISimpleService interface.
 ```C#
@@ -55,7 +55,7 @@ public class MyService : ISimpleService
     }
 }
 ```
-2. Pass your service class into with the Start method
+2. Pass your service class in with the Start method
 
 ```C#
 // Create and start a service...
