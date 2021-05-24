@@ -8,7 +8,23 @@
 	<Description>Android foreground/background service specifically designed for Xamarin.Forms.</Description>
 	<PackageId>Xamarin.Android.Service</PackageId>
 	<PackageIcon>bushbaby.png</PackageIcon>
+	<RepositoryUrl>https://github.com/JakeDyme/XamarinAndroidService</RepositoryUrl>
+	<RepositoryType>GitHub</RepositoryType>
+	<PackageTags>Xamarin,Android,Service,Foreground,Background</PackageTags>
+	<PackageProjectUrl>https://github.com/JakeDyme/XamarinAndroidService</PackageProjectUrl>
+	<PackageReleaseNotes>First Release</PackageReleaseNotes>
+	<PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <WarningLevel>5</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Nuget\**" />
+    <EmbeddedResource Remove="Nuget\**" />
+    <None Remove="Nuget\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
@@ -31,10 +47,6 @@
     <Reference Include="Xamarin.Forms.Core">
       <HintPath>References\Microsoft\Xamarin\NuGet\xamarin.forms\4.8.0.1451\lib\netstandard2.0\Xamarin.Forms.Core.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Nuget\" />
   </ItemGroup>
 
   <ItemGroup>
