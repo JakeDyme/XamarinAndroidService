@@ -7,7 +7,7 @@ but its called a foreground service, and includes a notification that the user c
 - A Nuget package for Xamarin Forms projects.
 
 ## Setup
-Install Nuget package into you Xamarin Formas project...
+Install Nuget package into you Xamarin Forms project...
 ```
 Install-Package Xamarin.Android.Service
 ```
